@@ -348,9 +348,9 @@ def run_full_analysis(ticker):
                     )
                     ev = proj["enterprise_value"] / scale
                     eq = ev + (cash - debt) / scale
-                    px = eq * scale / shares if shares else 0
+                    price_val = eq * scale / shares if shares else 0
                     wacc_row.append(ev)
-                    price_row.append(px)
+                    price_row.append(price_val)
                 wacc_matrix.append(wacc_row)
                 price_matrix.append(price_row)
             
@@ -413,7 +413,6 @@ def run_full_analysis(ticker):
             
             # Preview of projections
             st.subheader("Preview — Full Projection Schedule (in $B)")
-            import pandas as pd
             preview = pd.DataFrame({
                 "Year": years_list,
                 "Revenue": [f"{v:.1f}" for v in model_data["revenue"]],
