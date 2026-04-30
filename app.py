@@ -13,18 +13,18 @@ from dcf_engine import run_dcf, enterprise_to_equity, sensitivity_analysis
 from monte_carlo import run_monte_carlo
 from utils import to_excel
 
-st.set_page_config(page_title="DCF Pro", layout="wide", page_icon="📈")
+st.set_page_config(page_title="DCF Pro", layout="wide")
 
-st.title("📈 DCF Pro — Professional Valuation Model")
+st.title("DCF Pro — Professional Valuation Model")
 st.caption("Discounted Cash Flow analysis with auto-WACC, Monte Carlo, and sensitivity analysis.")
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
-    st.header("🎯 Ticker")
+    st.header("Ticker")
     ticker_input = st.text_input("Ticker(s) — comma-separated for compare", "AAPL").upper()
     tickers = [t.strip() for t in ticker_input.split(",") if t.strip()]
     
-    st.header("⚙️ Assumptions")
+    st.header("Assumptions")
     
     auto_wacc = st.checkbox("Auto-calculate WACC", value=True)
     manual_wacc = st.slider("Manual WACC", 0.05, 0.20, 0.09, 0.005, disabled=auto_wacc)
@@ -37,15 +37,15 @@ with st.sidebar:
     projection_years = st.slider("Projection Years", 5, 10, 5)
     tax_rate = st.slider("Tax Rate", 0.0, 0.40, 0.21, 0.01)
     
-    st.header("🎲 Monte Carlo")
+    st.header("Monte Carlo")
     run_mc = st.checkbox("Run Monte Carlo Simulation", value=True)
     n_sims = st.number_input("Simulations", 100, 10000, 1000, step=100)
     
-    st.header("📊 Base Year")
+    st.header("Base Year")
     fcf_method = st.radio("Base FCF method",
                           ["Most Recent", "3-Year Average", "5-Year Average"])
 
-run_btn = st.button("🚀 Run Analysis", type="primary", use_container_width=True)
+run_btn = st.button("Run Analysis", type="primary", use_container_width=True)
 
 # ---------- SINGLE COMPANY FULL ANALYSIS ----------
 def run_full_analysis(ticker):
@@ -108,8 +108,8 @@ def run_full_analysis(ticker):
     
     # Tabs
     tabs = st.tabs([
-        "📌 Summary", "📈 Historicals", "🧮 DCF",
-        "🔬 Sensitivity", "🎲 Monte Carlo", "💡 WACC", "📥 Export"
+        "Summary", "Historicals", "DCF",
+        "Sensitivity", "Monte Carlo", "WACC", "Export"
     ])
     
     # DCF
@@ -137,11 +137,11 @@ def run_full_analysis(ticker):
         
         # Verdict
         if upside > 20:
-            st.success(f"✅ Undervalued by {upside:.1f}% — Potential BUY")
+            st.success(f"Undervalued by {upside:.1f}% — Potential BUY")
         elif upside < -20:
-            st.error(f"❌ Overvalued by {abs(upside):.1f}% — Potential SELL")
+            st.error(f"Overvalued by {abs(upside):.1f}% — Potential SELL")
         else:
-            st.warning(f"⚖️ Fairly valued ({upside:.1f}%)")
+            st.warning(f"Fairly valued ({upside:.1f}%)")
     
     # ---- HISTORICALS ----
     with tabs[1]:
@@ -248,7 +248,7 @@ def run_full_analysis(ticker):
             st.plotly_chart(fig, use_container_width=True)
             
             prob_undervalued = (prices > current_price).mean() * 100
-            st.info(f"📊 Probability stock is undervalued: **{prob_undervalued:.1f}%**")
+            st.info(f"Probability stock is undervalued: **{prob_undervalued:.1f}%**")
         else:
             st.info("Enable Monte Carlo in sidebar to run this.")
     
@@ -267,7 +267,7 @@ def run_full_analysis(ticker):
     
  # ---- EXPORT ----
     with tabs[6]:
-        st.subheader("📥 Professional DCF Excel Export")
+        st.subheader("Professional DCF Excel Export")
         st.caption("Exports a full DCF model matching institutional template format.")
         
         from excel_exporter import create_dcf_excel
@@ -437,7 +437,7 @@ if run_btn:
         except Exception as e:
             st.error(f"Error analyzing {tickers[0]}: {e}")
     else:
-        st.header("📊 Multi-Company Comparison")
+        st.header("Multi-Company Comparison")
         results = []
         for t in tickers:
             try:
@@ -450,7 +450,7 @@ if run_btn:
         
         if results:
             st.divider()
-            st.header("🏆 Comparison Table")
+            st.header("Comparison Table")
             comp_df = pd.DataFrame(results)
             st.dataframe(comp_df.style.format({
                 "Current Price": "${:.2f}",
@@ -461,8 +461,8 @@ if run_btn:
             }).background_gradient(subset=["Upside %"], cmap="RdYlGn"),
                          use_container_width=True)
 else:
-    st.info("👈 Enter a ticker and click **Run Analysis**.")
-    with st.expander("ℹ️ About this app"):
+    st.info("Enter a ticker and click **Run Analysis**.")
+    with st.expander("About this app"):
         st.markdown("""
         **Features:**
         - Auto-WACC via CAPM (live 10-yr Treasury)
