@@ -4,6 +4,153 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+# ---------- GLOBAL THEME / TRADER UI ----------
+st.markdown("""
+<style>
+
+/* ===== GLOBAL ===== */
+* {
+    border-radius: 0 !important;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+.stApp {
+    background: radial-gradient(1200px 500px at top, #111827 0%, #020617 60%);
+    color: #E5E7EB;
+}
+
+/* ===== HERO ===== */
+.hero {
+    max-width: 900px;
+    margin: 4rem auto 3rem auto;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #FB923C;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #9CA3AF;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+/* ===== SIDEBAR ===== */
+section[data-testid="stSidebar"] {
+    background-color: #020617;
+    border-right: 1px solid #020617;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #CBD5E1;
+    font-size: 12px;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2 {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #F9FAFB;
+}
+
+/* ===== INPUTS ===== */
+input, textarea, select {
+    background-color: #020617 !important;
+    color: #E5E7EB !important;
+    border: 1px solid #1F2937 !important;
+}
+
+/* ===== BUTTON ===== */
+.stButton > button {
+    background: linear-gradient(90deg, #FB923C, #F97316);
+    color: #020617;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    padding: 0.9rem 1.1rem;
+    text-transform: uppercase;
+    border: none;
+}
+
+.stButton > button:hover {
+    filter: brightness(1.08);
+}
+
+/* ===== METRICS ===== */
+div[data-testid="stMetric"] {
+    background-color: #020617;
+    border: 1px solid #1F2937;
+    padding: 1.25rem;
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9CA3AF;
+}
+
+div[data-testid="stMetricValue"] {
+    font-size: 28px;
+    font-weight: 800;
+    color: #F9FAFB;
+}
+
+/* ===== TABS ===== */
+button[data-baseweb="tab"] {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #FB923C;
+    border-bottom: 2px solid #FB923C;
+}
+
+/* ===== DATAFRAMES ===== */
+thead tr th {
+    background-color: #020617 !important;
+    color: #9CA3AF;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+tbody tr {
+    background-color: #020617 !important;
+    border-bottom: 1px solid #1F2937;
+}
+
+tbody td {
+    color: #E5E7EB;
+}
+
+/* ===== CUSTOM ORANGE INFO BOX ===== */
+.orange-info {
+    background-color: #020617;
+    border-left: 3px solid #FB923C;
+    color: #FB923C;
+    padding: 1rem 1.25rem;
+
+/* ===== ALERTS ===== */
+div[data-testid="stAlert"] {
+    background-color: #020617;
+    border-left: 3px solid #FB923C;
+    color: #E5E7EB;
+}
+
+</style>
+""", unsafe_allow_html=True)
+# ---------- END THEME ----------
+
 from data_fetcher import (
     fetch_company_data, get_historical_fcf,
     get_historical_revenue, calculate_fcf_growth_rate
@@ -15,8 +162,16 @@ from utils import to_excel
 
 st.set_page_config(page_title="DCF Pro", layout="wide")
 
-st.title("DCF Pro — Professional Valuation Model")
-st.caption("Discounted Cash Flow analysis with auto-WACC, Monte Carlo, and sensitivity analysis.")
+st.markdown("""
+<div class="hero">
+  <span class="pill">INSTITUTIONAL VALUATION PLATFORM</span>
+  <h1>DCF - Valuation Model</h1>
+  <p>
+    Professional-grade discounted cash flow analysis combining
+    historical fundamentals, scenario modeling, and probabilistic valuation.
+  </p>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
@@ -127,21 +282,29 @@ def run_full_analysis(ticker):
         c3.metric("Intrinsic Price", f"${intrinsic_price:.2f}")
         c4.metric("Upside/Downside", f"{upside:.1f}%", delta=f"{upside:.1f}%")
         
-        st.info(f"""
-        **Base FCF:** ${base_fcf/1e9:.2f}B ({fcf_method})  
-        **Growth Rate Applied:** {growth*100:.2f}%  
-        **WACC:** {wacc*100:.2f}%  
-        **Terminal Growth:** {terminal_growth*100:.2f}%  
-        **Projection Horizon:** {projection_years} years
-        """)
-        
-        # Verdict
-        if upside > 20:
-            st.success(f"Undervalued by {upside:.1f}% — Potential BUY")
-        elif upside < -20:
-            st.error(f"Overvalued by {abs(upside):.1f}% — Potential SELL")
-        else:
-            st.warning(f"Fairly valued ({upside:.1f}%)")
+    summary_text = (
+        "**Base FCF:** ${:.2f}B  \n"
+        "**Growth:** {:.2f}%  \n"
+        "**WACC:** {:.2f}%  \n"
+        "**Terminal g:** {:.2f}%  \n"
+        "**Horizon:** {}Y"
+    ).format(
+        base_fcf / 1e9,
+        growth * 100,
+        wacc * 100,
+        terminal_growth * 100,
+        projection_years
+    )
+
+    st.markdown(summary_text)
+
+    # Verdict
+    if upside > 20:
+        st.markdown("### ✅ Investment View: **BUY**")
+    elif upside < -20:
+        st.markdown("### ❌ Investment View: **SELL**")
+    else:
+        st.markdown("### ⚖️ Investment View: **HOLD**")
     
     # ---- HISTORICALS ----
     with tabs[1]:
@@ -461,7 +624,12 @@ if run_btn:
             }).background_gradient(subset=["Upside %"], cmap="RdYlGn"),
                          use_container_width=True)
 else:
-    st.info("Enter a ticker and click **Run Analysis**.")
+    st.markdown("""
+    <div class="orange-info">
+        Enter a ticker and click <strong>Run Analysis</strong>.
+    </div>
+    """, unsafe_allow_html=True)
+
     with st.expander("About this app"):
         st.markdown("""
         **Features:**
