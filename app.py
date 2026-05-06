@@ -3,6 +3,25 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
+
+pio.templates["dcf_theme"] = go.layout.Template(
+    layout=go.Layout(
+        paper_bgcolor="#020617",
+        plot_bgcolor="#020617",
+        font=dict(color="#E5E7EB", family="Inter, system-ui, sans-serif"),
+        colorway=["#FB923C", "#F97316", "#FDBA74", "#FED7AA"],
+        xaxis=dict(gridcolor="#1F2937", color="#9CA3AF", linecolor="#1F2937"),
+        yaxis=dict(gridcolor="#1F2937", color="#9CA3AF", linecolor="#1F2937"),
+        margin=dict(l=40, r=20, t=40, b=40),
+    ),
+    data=go.layout.template.Data(
+        bar=[go.Bar(marker_color="#FB923C")],
+        scatter=[go.Scatter(line=dict(color="#FB923C", width=1.5))],
+    )
+)
+
+pio.templates.default = "dcf_theme"
 
 # ---------- GLOBAL THEME / TRADER UI ----------
 st.markdown("""
@@ -139,6 +158,7 @@ tbody td {
     border-left: 3px solid #FB923C;
     color: #FB923C;
     padding: 1rem 1.25rem;
+}
 
 /* ===== ALERTS ===== */
 div[data-testid="stAlert"] {
@@ -149,6 +169,29 @@ div[data-testid="stAlert"] {
 
 </style>
 """, unsafe_allow_html=True)
+
+
+# ---------- PLOTLY CHART DEFAULTS ----------
+CHART_LAYOUT = dict(
+    paper_bgcolor="#020617",
+    plot_bgcolor="#020617",
+    font_color="#E5E7EB",
+    font_family="Inter, system-ui, sans-serif",
+    xaxis=dict(gridcolor="#1F2937", color="#9CA3AF", linecolor="#1F2937"),
+    yaxis=dict(gridcolor="#1F2937", color="#9CA3AF", linecolor="#1F2937"),
+    margin=dict(l=40, r=20, t=40, b=40),
+)
+
+ORANGE = "#FB923C"
+ORANGE_DARK = "#F97316"
+
+# Apply to every bar chart like this:
+# fig = go.Figure(go.Bar(x=..., y=..., marker_color=ORANGE))
+# fig.update_layout(**CHART_LAYOUT)
+
+# Apply to every line chart like this:
+# fig = go.Figure(go.Scatter(x=..., y=..., line=dict(color=ORANGE, width=1.5)))
+# fig.update_layout(**CHART_LAYOUT)
 # ---------- END THEME ----------
 
 from data_fetcher import (
@@ -329,7 +372,9 @@ def run_full_analysis(ticker):
                             use_container_width=True)
         
         st.subheader("5-Year Price History")
-        st.line_chart(history["Close"])
+        fig = go.Figure(go.Scatter(x=history.index, y=history["Close"], line=dict(color="#FB923C", width=1.5)))
+        fig.update_layout(**CHART_LAYOUT)
+        st.plotly_chart(fig, use_container_width=True)
     
     # ---- DCF ----
     with tabs[2]:
